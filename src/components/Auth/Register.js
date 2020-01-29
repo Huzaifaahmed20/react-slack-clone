@@ -8,6 +8,7 @@ import {
   Message,
   Icon
 } from 'semantic-ui-react';
+import md5 from 'md5';
 import { Link } from 'react-router-dom';
 import firebase from '../../firebase';
 
@@ -20,7 +21,8 @@ const Register = () => {
     project_images: [],
     project_files: [],
     errors: [],
-    loading: false
+    loading: false,
+    userDbRef: firebase.database().ref('users')
   });
 
   const {
@@ -29,7 +31,8 @@ const Register = () => {
     password,
     passwordConfirmation,
     errors,
-    loading
+    loading,
+    userDbRef
   } = state;
 
   const handleChange = event => {
@@ -123,12 +126,28 @@ const Register = () => {
         const createdUser = await firebase
           .auth()
           .createUserWithEmailAndPassword(email, password);
-        console.log('TCL: Register -> createdUser', createdUser);
+
+        await createdUser.user.updateProfile({
+          displayName: username,
+          photoURL: `https://gravatar.com/avatar/${md5(
+            createdUser.user.email
+          )}/?d=identicon`
+        });
+
+        await saveUser(createdUser);
+
         setState({ errors: [], loading: false });
       } catch (error) {
         setState({ errors: state.errors.concat(error), loading: false });
       }
     }
+  };
+
+  const saveUser = async createdUser => {
+    return await userDbRef.child(createdUser.user.uid).set({
+      name: createdUser.user.displayName,
+      avatar: createdUser.user.photoURL
+    });
   };
 
   const displayErrors = errors =>
@@ -153,8 +172,8 @@ const Register = () => {
   return (
     <Grid textAlign="center" verticalAlign="middle" className="app">
       <Grid.Column style={{ maxWidth: 450 }}>
-        <Header as="h2" icon color="orange" textAlign="center">
-          <Icon name="laptop" color="orange" />
+        <Header as="h1" icon color="orange" textAlign="center">
+          <Icon name="code" color="orange" />
           Register for DevChat
         </Header>
         <Form encType="multipart/form-data" size="large">
