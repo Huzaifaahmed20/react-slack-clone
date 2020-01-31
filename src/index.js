@@ -17,19 +17,24 @@ import { Provider, connect } from 'react-redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import rootReducer from './reducers';
 import { setUser } from './actions/action';
+import { Dimmer, Loader } from 'semantic-ui-react';
 
 const store = createStore(rootReducer, composeWithDevTools());
-
-const Root = props => {
+const Root = ({ setUser, isLoading, history }) => {
   useEffect(() => {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        props.setUser(user);
-        props.history.push('/');
+        setUser(user);
+        history.push('/');
       }
     });
-  }, [props]);
-  return (
+  }, [history, isLoading, setUser]);
+
+  return isLoading ? (
+    <Dimmer active>
+      <Loader size="large" content={'Preparing Chats...'} />
+    </Dimmer>
+  ) : (
     <Router>
       <Switch>
         <Route path="/" component={App} />
@@ -40,7 +45,11 @@ const Root = props => {
   );
 };
 
-const RootWithAuth = withRouter(connect(null, { setUser })(Root));
+const mapStateToProps = state => ({
+  isLoading: state.user.isLoading
+});
+
+const RootWithAuth = withRouter(connect(mapStateToProps, { setUser })(Root));
 
 ReactDOM.render(
   <Provider store={store}>
