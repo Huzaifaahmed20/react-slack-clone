@@ -3,12 +3,13 @@ import { SidePanel, ColorPanel, Messages, MetaPanel } from './';
 
 import './App.css';
 import { Grid } from 'semantic-ui-react';
+import { connect } from 'react-redux';
 
-function App() {
+function App({ currentUser }) {
   return (
     <Grid columns="equal" className="app" style={{ background: '#eee' }}>
       <ColorPanel />
-      <SidePanel />
+      <SidePanel currentUser={currentUser} />
       <Grid.Column style={{ marginLeft: 320 }}>
         <Messages />
       </Grid.Column>
@@ -19,4 +20,8 @@ function App() {
   );
 }
 
-export default App;
+const mapStateToProps = ({ user }) => ({
+  currentUser: user.currentUser
+});
+
+export default connect(mapStateToProps)(App);

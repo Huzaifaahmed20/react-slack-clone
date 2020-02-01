@@ -20,10 +20,10 @@ import { setUser, clearUser } from './actions/action';
 import { Dimmer, Loader } from 'semantic-ui-react';
 
 const store = createStore(rootReducer, composeWithDevTools());
-const Root = ({ setUser, isLoading, history, clearUser }) => {
+
+const Root = ({ setUser, isLoading, clearUser, history }) => {
   useEffect(() => {
     firebase.auth().onAuthStateChanged(user => {
-      console.log('TCL: Root -> user', user);
       if (user) {
         setUser(user);
         history.push('/');
@@ -32,18 +32,18 @@ const Root = ({ setUser, isLoading, history, clearUser }) => {
         clearUser();
       }
     });
-  }, [history, isLoading, setUser, clearUser]);
+  }, [isLoading, setUser, clearUser, history]);
 
   return isLoading ? (
     <Dimmer active>
       <Loader size="large" content={'Preparing Chats...'} />
     </Dimmer>
   ) : (
-    <Router history={history}>
+    <Router>
       <Switch>
         <Route exact path="/" component={App} />
-        <Route exact path="/login" component={Login} />
-        <Route exact path="/register" component={Register} />
+        <Route path="/login" component={Login} />
+        <Route path="/register" component={Register} />
       </Switch>
     </Router>
   );
