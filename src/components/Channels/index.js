@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, Icon, Modal, Form, Input, Button } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 
-import { setCurrentChannel } from '../../actions/action';
+import { setCurrentChannel } from '../../actions/ChannelActions';
 import firebase from '../../firebase';
 
 const Channels = ({ currentUser, setCurrentChannel }) => {
