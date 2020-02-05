@@ -1,18 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useReducer, useEffect } from 'react';
 import { Menu, Icon, Modal, Form, Input, Button } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 
 import { setCurrentChannel } from '../../actions/ChannelActions';
 import firebase from '../../firebase';
 
+
 const Channels = ({ currentUser, setCurrentChannel }) => {
-  const [state, setState] = useState({
+  const reducer = (prevState, updatedProperty) => ({
+    ...prevState,
+    ...updatedProperty,
+  });
+
+  //in this case in which we have multiple states, solution is that wehther initialize different state for each, or use useReducer
+  const initialState = {
     channels: [],
     isModalOpen: false,
     channelName: '',
     channelDescription: '',
     firstLoad: true
-  });
+  };
+
+  const [state, setState] = useReducer(reducer, initialState);
+
   const {
     channels,
     isModalOpen,
@@ -25,10 +35,9 @@ const Channels = ({ currentUser, setCurrentChannel }) => {
   const handleClose = () => setState({ isModalOpen: false });
   const handleOpen = () => setState({ isModalOpen: true });
   const handleChange = ev =>
-    setState({ ...state, [ev.target.name]: ev.target.value });
+    setState({ [ev.target.name]: ev.target.value });
 
   const setFirstChannel = () => {
-    console.log('TCL: setFirstChannel -> channels.length', channels.length);
     if (firstLoad && channels && channels.length > 0) {
       const firstChannel = channels[0];
       setCurrentChannel(firstChannel);
@@ -44,9 +53,12 @@ const Channels = ({ currentUser, setCurrentChannel }) => {
     });
   };
 
+
+
   useEffect(() => {
     fetchChannels();
-  }, [channels && channels.length]);
+  }, [channels.length]);
+
 
   const addChannel = () => {
     const { displayName, photoURL } = currentUser;
