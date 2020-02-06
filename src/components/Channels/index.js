@@ -5,19 +5,18 @@ import { connect } from 'react-redux';
 import { setCurrentChannel } from '../../actions/ChannelActions';
 import firebase from '../../firebase';
 
-
+const reducer = (prevState, updatedProperty) => ({
+  ...prevState,
+  ...updatedProperty
+});
 const Channels = ({ currentUser, setCurrentChannel }) => {
-  const reducer = (prevState, updatedProperty) => ({
-    ...prevState,
-    ...updatedProperty,
-  });
-
   //in this case in which we have multiple states, solution is that wehther initialize different state for each, or use useReducer
   const initialState = {
     channels: [],
     isModalOpen: false,
     channelName: '',
     channelDescription: '',
+    activeChannel: '',
     firstLoad: true
   };
 
@@ -28,19 +27,20 @@ const Channels = ({ currentUser, setCurrentChannel }) => {
     isModalOpen,
     channelName,
     channelDescription,
+    activeChannel,
     firstLoad
   } = state;
   const channelRef = firebase.database().ref('channels');
 
   const handleClose = () => setState({ isModalOpen: false });
   const handleOpen = () => setState({ isModalOpen: true });
-  const handleChange = ev =>
-    setState({ [ev.target.name]: ev.target.value });
+  const handleChange = ev => setState({ [ev.target.name]: ev.target.value });
 
   const setFirstChannel = () => {
-    if (firstLoad && channels && channels.length > 0) {
+    if (firstLoad && channels.length > 0) {
       const firstChannel = channels[0];
       setCurrentChannel(firstChannel);
+      setActiveChannel(firstChannel);
     }
     setState({ firstLoad: false });
   };
@@ -53,12 +53,12 @@ const Channels = ({ currentUser, setCurrentChannel }) => {
     });
   };
 
-
-
   useEffect(() => {
     fetchChannels();
+    return () => {
+      setFirstChannel();
+    };
   }, [channels.length]);
-
 
   const addChannel = () => {
     const { displayName, photoURL } = currentUser;
@@ -84,7 +84,11 @@ const Channels = ({ currentUser, setCurrentChannel }) => {
     }
   };
 
+  const setActiveChannel = channel => setState({ activeChannel: channel.id });
+
   const changeChannel = channel => {
+    setActiveChannel(channel);
+    //props
     setCurrentChannel(channel);
   };
 
@@ -96,7 +100,8 @@ const Channels = ({ currentUser, setCurrentChannel }) => {
         name={channel.name}
         key={channel.id}
         onClick={() => changeChannel(channel)}
-        style={{ opacity: 0.7 }}>
+        style={{ opacity: 0.7 }}
+        active={channel.id === activeChannel}>
         # {channel.name}
       </Menu.Item>
     ));
